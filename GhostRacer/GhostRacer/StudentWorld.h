@@ -2,7 +2,6 @@
 #define STUDENTWORLD_H_
 
 #include "GameWorld.h"
-#include "Actor.h"
 #include <string>
 #include <list>
 
