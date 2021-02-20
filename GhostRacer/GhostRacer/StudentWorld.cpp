@@ -33,7 +33,7 @@ int StudentWorld::init()
     for (int i = 0; i < M; i++) {
         Actor* left = new Border(false, LEFT_EDGE + ROAD_WIDTH / 3, i * (4 * SPRITE_HEIGHT));
         aloa.push_back(left);
-        Actor* right = new Border(false, RIGHT_EDGE + ROAD_WIDTH / 3, i * (4 * SPRITE_HEIGHT));
+        Actor* right = new Border(false, RIGHT_EDGE - ROAD_WIDTH / 3, i * (4 * SPRITE_HEIGHT));
         aloa.push_back(right);
     }
 
