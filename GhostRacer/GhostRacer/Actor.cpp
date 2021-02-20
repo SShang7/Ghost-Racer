@@ -8,6 +8,15 @@ Actor::Actor(int imageID, double startX, double startY, double size, unsigned in
 {
 }
 
+bool Actor::getLiving() {
+	return m_living;
+}
+int Actor::getSpeedV() {
+	return m_speedv;
+}
+StudentWorld* Actor::getWorld() {
+	return m_world;
+}
 //Car Constructor
 Car::Car(int imageID, double startX, double startY, int hp, int speedv) 
 	: Actor(imageID, startX, startY, 4.0, 0, 90, true, hp, speedv, 0) {
@@ -16,6 +25,13 @@ Car::Car(int imageID, double startX, double startY, int hp, int speedv)
 //GhostRacer Constructor
 GhostRacer::GhostRacer() : Car(IID_GHOST_RACER, 128, 32, 100, 0) {
 	m_water = 10;
+}
+
+
+//GhostRacer doSomething()
+void GhostRacer::doSomething() {
+	if (!getLiving()) return;
+	return;
 }
 
 //Stationary Constructor
@@ -32,6 +48,10 @@ Border::Border(bool yellow, int x, int y)
 int Border::isYellowImage(bool yellow){
 	if (yellow) return IID_YELLOW_BORDER_LINE;
 	else return IID_WHITE_BORDER_LINE;
+}
+void Border::doSomething() {
+	//int vert_speed = getSpeedV() - 
+	return;
 }
 //Pedestrian Constructor
 Pedestrian::Pedestrian(int imageID, double startX, double startY, double size, int speedv) :

@@ -17,6 +17,9 @@ private:
 public:
 	Actor(int imageID, double startX, double startY, double size, unsigned int depth, int startDirection, bool coll, int hp, int speedv, int speedh);
 	virtual void doSomething() = 0;
+	bool getLiving();
+	int getSpeedV();
+	StudentWorld* getWorld();
 };
 
 
@@ -32,24 +35,24 @@ class Car : public Actor {
 class GhostRacer : public Car {
 public:
 	GhostRacer();
-	void doSomething() = 0;
+	void doSomething();
 private:
 	int m_water;
 };
 
 
 
-class Stationary : Actor {
+class Stationary : public Actor {
 public:
 	Stationary(int imageID, double startX, double startY, double size, int hp, int speedv, int speedh);
 	virtual void doSomething() = 0;
 
 };
 
-class Border : Stationary {
+class Border : public Stationary {
 public:
 	Border(bool yellow, int x, int y);
-	void doSomething() = 0;
+	void doSomething();
 private:
 	int isYellowImage(bool yellow);
 };
