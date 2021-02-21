@@ -18,10 +18,13 @@ public:
     virtual int init();
     virtual int move();
     virtual void cleanUp();
-
+    GhostRacer* getGR();
 private:
     std::list<Actor*> aloa;
     GhostRacer* m_gr;
+    int last_WB_y;
+    int LEFT_EDGE = ROAD_CENTER - ROAD_WIDTH / 2;
+    int RIGHT_EDGE = ROAD_CENTER + ROAD_WIDTH / 2;
 };
 
 #endif // STUDENTWORLD_H_

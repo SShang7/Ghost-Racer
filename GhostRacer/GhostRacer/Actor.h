@@ -15,10 +15,13 @@ private:
 	StudentWorld* m_world;
 
 public:
-	Actor(int imageID, double startX, double startY, double size, unsigned int depth, int startDirection, bool coll, int hp, int speedv, int speedh);
+	Actor(StudentWorld* world, int imageID, double startX, double startY, double size, unsigned int depth, int startDirection, bool coll, int hp, int speedv, int speedh);
 	virtual void doSomething() = 0;
 	bool getLiving();
-	int getSpeedV();
+	void kill();
+	double getSpeedV();
+	void setSpeedV(double s);
+	double getSpeedH();
 	StudentWorld* getWorld();
 };
 
@@ -26,7 +29,7 @@ public:
 //Car Class
 class Car : public Actor {
 	public:
-		Car(int imageID, double startX, double startY, int hp, int speedv);
+		Car(StudentWorld* world, int imageID, double startX, double startY, int hp, int speedv);
 		virtual void doSomething() = 0;
 };
 
@@ -34,7 +37,7 @@ class Car : public Actor {
 //GhostRacer Class
 class GhostRacer : public Car {
 public:
-	GhostRacer();
+	GhostRacer(StudentWorld* world);
 	void doSomething();
 private:
 	int m_water;
@@ -44,14 +47,14 @@ private:
 
 class Stationary : public Actor {
 public:
-	Stationary(int imageID, double startX, double startY, double size, int hp, int speedv, int speedh);
+	Stationary(StudentWorld* world, int imageID, double startX, double startY, double size, int hp, int speedv, int speedh);
 	virtual void doSomething() = 0;
 
 };
 
 class Border : public Stationary {
 public:
-	Border(bool yellow, int x, int y);
+	Border(StudentWorld* world, bool yellow, int x, int y);
 	void doSomething();
 private:
 	int isYellowImage(bool yellow);
@@ -67,7 +70,7 @@ public:
 //Pedestrian Class
 class Pedestrian : public Actor {
 public:
-	Pedestrian(int imageID, double startX, double startY, double size, int speedv);
+	Pedestrian(StudentWorld* world, int imageID, double startX, double startY, double size, int speedv);
 	virtual void doSomething() = 0;
 private:
 	int m_plan;
