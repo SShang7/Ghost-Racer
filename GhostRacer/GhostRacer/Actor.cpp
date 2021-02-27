@@ -7,6 +7,9 @@ Actor::Actor(StudentWorld* world, int imageID, double startX, double startY, dou
 	: GraphObject(imageID, startX, startY, startDirection, size, depth), m_world(world), m_living(true), m_speedv(speedv), m_speedh(speedh), m_coll(coll), m_hp(hp)
 {
 }
+bool  Actor::sprayed() {
+	return false;
+}
 int Actor::getHP() {
 	return m_hp;
 }
@@ -28,6 +31,9 @@ void Actor::setSpeedV(double s) {
 double Actor::getSpeedH() {
 	return m_speedh;
 }
+void Actor::setSpeedH(double s) {
+	m_speedh = s;
+}
 StudentWorld* Actor::getWorld() {
 	return m_world;
 }
@@ -35,7 +41,9 @@ StudentWorld* Actor::getWorld() {
 Car::Car(StudentWorld* world, int imageID, double startX, double startY, int hp, int speedv) 
 	: Actor(world, imageID, startX, startY, 4.0, 0, 90, true, hp, speedv, 0) {
 }
-
+bool Car::sprayed() {
+	return false;
+}
 //GhostRacer Constructor
 GhostRacer::GhostRacer(StudentWorld* world) : Car(world, IID_GHOST_RACER, 128, 32, 100, 0) {
 	m_water = 10;
@@ -73,7 +81,7 @@ void GhostRacer::doSomething() {
 		case KEY_PRESS_SPACE:
 			if (m_water > 0) {
 				StudentWorld* w = getWorld();
-				Actor* s = new Spray(w, getX()+SPRITE_HEIGHT*sin((dir - 90) * pi/180), getY() + SPRITE_HEIGHT*cos((dir - 90) * pi/180), dir);
+				Actor* s = new Spray(w, getX()+SPRITE_HEIGHT*sin((dir - 90.0) * pi/180), getY() + SPRITE_HEIGHT*cos((dir - 90.0) * pi/180), dir);
 				w->addActor(s);
 				w->playSound(SOUND_PLAYER_SPRAY);
 				m_water--;
@@ -130,6 +138,10 @@ Spray::Spray(StudentWorld* world, double x, double y, int dir)
 void Spray::doSomething() {
 	if (!getLiving()) return;
 	//check activation
+	if (getWorld()->overlapWater(this)) {
+		kill();
+		return;
+	}
 	moveForward(SPRITE_HEIGHT);
 	m_travelDist -= SPRITE_HEIGHT;
 	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
@@ -150,7 +162,6 @@ Stationary::Stationary(StudentWorld* world, int imageID, double startX, double s
 //Border Constructor
 Border::Border(StudentWorld* world, bool yellow, int x, int y)
 	: Stationary(world, isYellowImage(yellow), x, y, 2.0, 0) {
-
 }
 int Border::isYellowImage(bool yellow){
 	if (yellow) return IID_YELLOW_BORDER_LINE;
@@ -191,6 +202,34 @@ void OilSlick::doSomething() {
 	}
 
 }
+//HealingGoodie Constructor
+HealingGoodie::HealingGoodie(StudentWorld* world, double x, double y) : Stationary(world, IID_HEAL_GOODIE, x, y, 1.0, 0) {
+
+}
+//HealingGoodie doSomething
+void HealingGoodie::doSomething() {
+	double vert_speed = -4.0 - getWorld()->getGR()->getSpeedV();
+	double horiz_speed = 0;
+	double new_y = getY() + vert_speed;
+	double new_x = getX() + horiz_speed;
+	moveTo(new_x, new_y);
+	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
+		kill();
+		return;
+	}
+	GhostRacer* gr = getWorld()->getOverlappingGhostRacer(this);
+	if (gr != nullptr) {
+		gr->loseHP(-10);
+		kill();
+		getWorld()->playSound(SOUND_GOT_GOODIE);
+		getWorld()->increaseScore(250);
+	}
+
+}
+bool HealingGoodie::sprayed() {
+	kill();
+	return true;
+}
 //HolyWaterGoodie Constructor
 HolyWaterGoodie::HolyWaterGoodie(StudentWorld* world, double x, double y) : Stationary(world, IID_HOLY_WATER_GOODIE, x, y, 2.0, 90){
 	
@@ -214,6 +253,10 @@ void HolyWaterGoodie::doSomething() {
 		getWorld()->increaseScore(50);
 	}
 	
+}
+bool HolyWaterGoodie::sprayed() {
+	kill();
+	return true;
 }
 //Soul Constructor
 Soul::Soul(StudentWorld* world, double x, double y) : Stationary(world, IID_SOUL_GOODIE, x, y, 4.0, 0) {
@@ -240,10 +283,123 @@ void Soul::doSomething() {
 	setDirection(dir + 10);
 }
 //Pedestrian Constructor
-Pedestrian::Pedestrian(StudentWorld* world, int imageID, double startX, double startY, double size, int speedv) :
+Pedestrian::Pedestrian(StudentWorld* world, int imageID, double startX, double startY, double size) :
 	Actor(world, imageID, startX, startY, size, 0, 90, true, 2, -4, 0)
 {
 	m_plan = 0;
 }
+void Pedestrian::moveDec() {
+	m_plan--;
+}
+int Pedestrian::getMove() const {
+	return m_plan;
+}
+void Pedestrian::setMove(int n) {
+	m_plan = n;
+}
+//HumanPed Constructor
+HumanPed::HumanPed(StudentWorld* world, double x, double y) : Pedestrian(world, IID_HUMAN_PED, x, y, 2.0) {
+}
+
+//HumanPed doSomething
+void HumanPed::doSomething() {
+	if (getHP() < 0 || !getLiving()) return;
+	GhostRacer* gr = getWorld()->getOverlappingGhostRacer(this);
+	if (gr != nullptr) {
+		gr->kill();
+		return;
+	}
+	double vert_speed = getSpeedV() - getWorld()->getGR()->getSpeedV();
+	double horiz_speed = getSpeedH();
+	double new_y = getY() + vert_speed;
+	double new_x = getX() + horiz_speed;
+	moveTo(new_x, new_y);
+	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
+		kill();
+		return;
+	}
+	moveDec();
+	if (getMove() > 0) return;
+	setSpeedH(pow(-1, randInt(0, 1)) * randInt(1, 3));
+	setMove(randInt(4,32));
+	if (getSpeedH() < 0) setDirection(180);
+	else if (getSpeedH() > 0) setDirection(0);
+}
+
+bool HumanPed::sprayed() {
+	setSpeedH(-1 * getSpeedH());
+	if (getDirection() == 0) setDirection(180);
+	else setDirection(0);
+	getWorld()->playSound(SOUND_PED_HURT);
+	return true;
+}
 
 //ZombiePed Constructor
+ZombiePed::ZombiePed(StudentWorld* world, double x, double y) : Pedestrian(world, IID_ZOMBIE_PED, x, y, 3.0) {
+	m_grunt = 0;
+}
+
+//ZombiePed doSomething
+void ZombiePed::doSomething() {
+	if (!getLiving()) return;
+	GhostRacer* gr = getWorld()->getOverlappingGhostRacer(this);
+	if (gr != nullptr) {
+		gr->loseHP(5);
+		loseHP(2);
+		kill();
+		getWorld()->playSound(SOUND_PED_DIE);
+		getWorld()->increaseScore(150);
+		return;
+	}
+	double GR_x = getWorld()->getGR()->getX();
+	double GR_y = getWorld()->getGR()->getX();
+	double delta_x = getX() - GR_x;
+	if (abs(delta_x) < 30 && getY() > GR_y) {
+		setDirection(270);
+		if (delta_x < 0) {
+			setSpeedH(1);
+		}
+		else if (delta_x > 0) {
+			setSpeedH(-1);
+		}
+		else setSpeedH(0);
+		m_grunt--;
+		if (m_grunt <= 0) {
+			getWorld()->playSound(SOUND_ZOMBIE_ATTACK);
+			m_grunt = 20;
+		}
+	}
+	double vert_speed = getSpeedV() - getWorld()->getGR()->getSpeedV();
+	double horiz_speed = getSpeedH();
+	double new_y = getY() + vert_speed;
+	double new_x = getX() + horiz_speed;
+	moveTo(new_x, new_y);
+	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
+		kill();
+		return;
+	}
+	
+	if (getMove() > 0) { 
+		moveDec();
+		return; 
+	}
+	setSpeedH(pow(-1, randInt(0, 1)) * randInt(1, 3));
+	setMove(randInt(4, 32));
+	if (getSpeedH() < 0) setDirection(180);
+	else if (getSpeedH() > 0) setDirection(0);
+}
+
+bool ZombiePed::sprayed() {
+	loseHP(1);
+	if (getHP() <= 0) {
+		kill();
+		getWorld()->playSound(SOUND_PED_DIE);
+		if (randInt(0, 4) == 0) {
+			Actor* hg = new HealingGoodie(getWorld(), getX(), getY());
+			getWorld()->addActor(hg);
+		}
+		getWorld()->increaseScore(150);
+	}
+	else getWorld()->playSound(SOUND_PED_HURT);
+	return true;
+}

@@ -82,6 +82,18 @@ int StudentWorld::move()
         last_WB_y = aloa.back()->getY();
     }
     int L = getLevel();
+    //human ped spawn
+    int ChanceHumanPed = max(200 - L * 10, 30);
+    if (randInt(0, ChanceHumanPed - 1) == 0) {
+        Actor* hp = new HumanPed(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT);
+        aloa.push_back(hp);
+    }
+    //zombie ped spawn
+    int ChanceZombiePed = max(100 - L * 10, 20);
+    if (randInt(0, ChanceZombiePed - 1) == 0) {
+        Actor* zp = new ZombiePed(this, randInt(0, VIEW_WIDTH), VIEW_HEIGHT);
+        aloa.push_back(zp);
+    }
     //oil slick spawn
     int ChanceOilSlick = max(150 - L * 10, 40);
     if (randInt(0, ChanceOilSlick - 1) == 0) {
@@ -104,15 +116,7 @@ int StudentWorld::move()
         increaseScore(m_bonus);
         return GWSTATUS_FINISHED_LEVEL;
     }
-    /*
-    for (list<Actor*>::iterator i = aloa.begin(); i != prev(aloa.end()); ++i) {
-        for (list<Actor*>::iterator j = next(i); j != aloa.end(); ++j) {
-            if (overlap(*i, *j)) {
 
-            }
-        }
-    }
-    */
     m_bonus--;
     ostringstream oss;
     oss << "Score: " << getScore();
@@ -154,6 +158,16 @@ bool StudentWorld::overlap(Actor* a1, Actor* a2) const {
     double delta_y = abs(a1->getY() - a2->getY());
     double radius_sum = a1->getRadius() + a2->getRadius();
     return delta_x < radius_sum * .25 && delta_y < radius_sum * .6;
+}
+
+bool StudentWorld::overlapWater(Actor* a) {
+for (list<Actor*>::iterator i = aloa.begin(); i != prev(aloa.end()); ++i) {
+    if (overlap(*i, a)) {
+        bool shot = (*i)->sprayed();
+        if (shot) return true;
+    }
+}
+return false;
 }
 
 GhostRacer* StudentWorld::getOverlappingGhostRacer(Actor* a) const {
