@@ -37,7 +37,6 @@ class Car : public Actor {
 	public:
 		Car(StudentWorld* world, int imageID, double startX, double startY, int hp, int speedv);
 		virtual void doSomething() = 0;
-		virtual bool sprayed();
 };
 
 
@@ -128,9 +127,10 @@ public:
 	Pedestrian(StudentWorld* world, int imageID, double startX, double startY, double size);
 	virtual void doSomething() = 0;
 	virtual bool sprayed() = 0;
-	void moveDec();
 	int getMove() const;
 	void setMove(int n);
+protected:
+	void moveDec();
 private:
 	int m_plan;
 };

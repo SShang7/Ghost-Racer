@@ -47,9 +47,6 @@ StudentWorld* Actor::getWorld() {
 Car::Car(StudentWorld* world, int imageID, double startX, double startY, int hp, int speedv) 
 	: Actor(world, imageID, startX, startY, 4.0, 0, 90, true, hp, speedv, 0) {
 }
-bool Car::sprayed() {
-	return false;
-}
 //GhostRacer Constructor
 GhostRacer::GhostRacer(StudentWorld* world) : Car(world, IID_GHOST_RACER, 128, 32, 100, 0) {
 	m_water = 10;
@@ -87,7 +84,7 @@ void GhostRacer::doSomething() {
 		case KEY_PRESS_SPACE:
 			if (m_water > 0) {
 				StudentWorld* w = getWorld();
-				Actor* s = new Spray(w, getX()+SPRITE_HEIGHT*sin((dir - 90.0) * pi/180), getY() + SPRITE_HEIGHT*cos((dir - 90.0) * pi/180), dir);
+				Actor* s = new Spray(w, getX()+SPRITE_HEIGHT*cos(dir * pi/180), getY() + SPRITE_HEIGHT*sin(dir * pi/180), dir);
 				w->addActor(s);
 				w->playSound(SOUND_PLAYER_SPRAY);
 				m_water--;
@@ -173,16 +170,13 @@ void ZombieCab::doSomething() {
 	}
 	Actor* a = getWorld()->closestFrontCollLane(this);
 	if (vert_speed > GR_SpeedV && a != nullptr) {
-		if (a->getY() - getY() < 96) {
 			setSpeedV(getSpeedV() - .5);
 			return;
-		}
 	}
-	if (vert_speed <= GR_SpeedV && a != nullptr) {
-		if (a->getY() - getY() < 96) {
+	Actor* b = getWorld()->closestBehindCollLane(this);
+	if (vert_speed <= GR_SpeedV && b != nullptr) {
 			setSpeedV(getSpeedV() + .5);
 			return;
-		}
 	}
 	m_plan--;
 	if (m_plan > 0) return;

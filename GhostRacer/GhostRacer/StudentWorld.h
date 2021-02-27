@@ -24,6 +24,7 @@ public:
     bool overlap(Actor* a1, Actor* a2) const;
     bool overlapWater(Actor* a);
     Actor* closestFrontCollLane(Actor* a);
+    Actor* closestBehindCollLane(Actor* a);
     // If actor a overlaps this world's GhostRacer, return a pointer to the
     // GhostRacer; otherwise, return nullptr
     GhostRacer* getOverlappingGhostRacer(Actor* a) const;

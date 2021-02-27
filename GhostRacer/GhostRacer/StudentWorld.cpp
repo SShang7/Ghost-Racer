@@ -234,14 +234,34 @@ int StudentWorld::lane(double x) {
     return lane;
 }
 Actor* StudentWorld::closestFrontCollLane(Actor* a) {
+    Actor* closest = nullptr;
     for (list<Actor*>::iterator i = aloa.begin(); i != aloa.end(); ++i) {
         if (lane(a->getX()) == lane((*i)->getX())) {
             if ((*i)->getColl()) {
-                if ((*i)->getY() - a->getY() > 0) return *i;
+                double delta_y = (*i)->getY() - a->getY();
+                if (delta_y > 0 && delta_y < 96) {
+                    if (closest == nullptr) closest = *i;
+                    return closest;
+                }
             }
         }
     }
-    return nullptr;
+    return closest;
+}
+Actor* StudentWorld::closestBehindCollLane(Actor* a) {
+    Actor* closest = nullptr;
+    for (list<Actor*>::iterator i = aloa.begin(); i != aloa.end(); ++i) {
+        if (lane(a->getX()) == lane((*i)->getX())) {
+            if ((*i)->getColl()) {
+                double delta_y = (*i)->getY() - a->getY();
+                if (delta_y < 0 && delta_y > -96) {
+                    if (closest == nullptr) closest = *i;
+                    return closest;
+                }
+            }
+        }
+    }
+    return closest;
 }
 Actor* StudentWorld::closestBotCollLane(int l) {
     Actor* lowest = nullptr;
