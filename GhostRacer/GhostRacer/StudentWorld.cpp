@@ -43,8 +43,7 @@ int StudentWorld::init()
 
 int StudentWorld::move()
 {
-    // This code is here merely to allow the game to build, run, and terminate after you hit enter.
-    // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
+    // doSomething on aloa if living
     for (list<Actor*>::iterator i = aloa.begin(); i != aloa.end(); ++i) {
         if ((*i)->getLiving()) {
             (*i)->doSomething();
@@ -82,6 +81,52 @@ int StudentWorld::move()
         last_WB_y = aloa.back()->getY();
     }
     int L = getLevel();
+    //Zombie cab spawn
+    int ChanceVehicle = max(100 - L * 10, 20);
+    if (randInt(0, ChanceVehicle - 1) == 0) {
+        int cur_lane = randInt(0, 2);
+        double start_x;
+        double start_y;
+        int start_speed;
+        bool skip = true;
+        int lane_iter = 0;
+        while (lane_iter < 3) {
+            Actor* bot = closestBotCollLane(cur_lane);
+            if (bot == nullptr || bot->getY() > VIEW_HEIGHT / 3) {
+                start_y = SPRITE_HEIGHT / 2;
+                start_speed = m_gr->getSpeedV() + randInt(2, 4);
+                skip = false;
+                break;
+            }
+            Actor* top = closestTopCollLane(cur_lane);
+            if (top == nullptr || top->getY() < (VIEW_HEIGHT * 2 / 3)) {
+                start_y = VIEW_HEIGHT - SPRITE_HEIGHT / 2;
+                start_speed = m_gr->getSpeedV() - randInt(2, 4);
+                skip = false;
+                break;
+            }
+            
+            if (cur_lane == 0) cur_lane = 1;
+            else if (cur_lane == 1) cur_lane = 2;
+            else cur_lane = 0;
+            lane_iter++;
+        }
+        if (!skip) {
+            switch (cur_lane) {
+            case 0:
+                start_x = ROAD_CENTER - ROAD_WIDTH/3;
+                break;
+            case 1:
+                start_x = ROAD_CENTER;
+                break;
+            case 2:
+                start_x = ROAD_CENTER + ROAD_WIDTH / 3;
+                break;
+            }
+            Actor* zc = new ZombieCab(this, start_x, start_y, start_speed);
+            aloa.push_back(zc);
+        }
+    }
     //human ped spawn
     int ChanceHumanPed = max(200 - L * 10, 30);
     if (randInt(0, ChanceHumanPed - 1) == 0) {
@@ -112,12 +157,17 @@ int StudentWorld::move()
         Actor* ls = new Soul(this, randInt(LEFT_EDGE, RIGHT_EDGE), VIEW_HEIGHT);
         aloa.push_back(ls);
     }
+    //soul requirement to pass level
     if (m_soulCount >= 2 * L + 5) {
+        playSound(SOUND_FINISHED_LEVEL);
         increaseScore(m_bonus);
         return GWSTATUS_FINISHED_LEVEL;
     }
-
-    m_bonus--;
+    //decrement bonus
+    if (m_bonus > 0) {
+        m_bonus--;
+    }
+    //score board
     ostringstream oss;
     oss << "Score: " << getScore();
     oss << " Lvl: " << L;
@@ -161,7 +211,7 @@ bool StudentWorld::overlap(Actor* a1, Actor* a2) const {
 }
 
 bool StudentWorld::overlapWater(Actor* a) {
-for (list<Actor*>::iterator i = aloa.begin(); i != prev(aloa.end()); ++i) {
+for (list<Actor*>::iterator i = aloa.begin(); i != aloa.end(); ++i) {
     if (overlap(*i, a)) {
         bool shot = (*i)->sprayed();
         if (shot) return true;
@@ -175,4 +225,45 @@ GhostRacer* StudentWorld::getOverlappingGhostRacer(Actor* a) const {
         return m_gr;
     }
     return nullptr;
+}
+int StudentWorld::lane(double x) {
+    int lane;
+    if(x >= LEFT_EDGE && x < LEFT_EDGE + ROAD_WIDTH / 3) lane = 0;
+    else if (x >= LEFT_EDGE + ROAD_WIDTH / 3 && x < RIGHT_EDGE - ROAD_WIDTH / 3) lane = 1;
+    else lane = 2;
+    return lane;
+}
+Actor* StudentWorld::closestFrontCollLane(Actor* a) {
+    for (list<Actor*>::iterator i = aloa.begin(); i != aloa.end(); ++i) {
+        if (lane(a->getX()) == lane((*i)->getX())) {
+            if ((*i)->getColl()) {
+                if ((*i)->getY() - a->getY() > 0) return *i;
+            }
+        }
+    }
+    return nullptr;
+}
+Actor* StudentWorld::closestBotCollLane(int l) {
+    Actor* lowest = nullptr;
+    for (list<Actor*>::iterator i = aloa.begin(); i != aloa.end(); ++i) {
+        if (l == lane((*i)->getX())) {
+            if ((*i)->getColl()) {
+                if (lowest == nullptr) lowest = *i;
+                else if ((*i)->getY() < lowest->getY()) lowest = *i;
+            }
+        }
+    }
+    return lowest;
+}
+Actor* StudentWorld::closestTopCollLane(int l) {
+    Actor* highest = nullptr;
+    for (list<Actor*>::iterator i = aloa.begin(); i != aloa.end(); ++i) {
+        if (l == lane((*i)->getX())) {
+            if ((*i)->getColl()) {
+                if (highest == nullptr) highest = *i;
+                else if ((*i)->getY() > highest->getY()) highest = *i;
+            }
+        }
+    }
+    return highest;
 }

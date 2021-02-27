@@ -20,12 +20,14 @@ public:
 	virtual bool sprayed();
 	int getHP();
 	void loseHP(int n);
+	void setHP(int n);
 	bool getLiving();
 	void kill();
 	double getSpeedV();
 	void setSpeedV(double s);
 	double getSpeedH();
 	void setSpeedH(double s);
+	bool getColl();
 	StudentWorld* getWorld();
 };
 
@@ -108,15 +110,18 @@ public:
 	virtual void doSomething();
 };
 
-/*
+
 //ZombieCab Class
 class ZombieCab : public Car {
 public:
-	ZombieCab(StudentWorld* world, double x, double y);
+	ZombieCab(StudentWorld* world, double x, double y, int speedv);
 	virtual void doSomething();
 	virtual bool sprayed();
+private:
+	bool m_damaged;
+	int m_plan;
 };
-*/
+
 //Pedestrian Class
 class Pedestrian : public Actor {
 public:

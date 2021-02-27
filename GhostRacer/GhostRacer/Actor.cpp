@@ -16,6 +16,9 @@ int Actor::getHP() {
 void Actor::loseHP(int n) {
 	m_hp -= n;
 }
+void Actor::setHP(int n) {
+	m_hp == n;
+}
 bool Actor::getLiving() {
 	return m_living;
 }
@@ -33,6 +36,9 @@ double Actor::getSpeedH() {
 }
 void Actor::setSpeedH(double s) {
 	m_speedh = s;
+}
+bool Actor::getColl() {
+	return m_coll;
 }
 StudentWorld* Actor::getWorld() {
 	return m_world;
@@ -128,6 +134,80 @@ void GhostRacer::spin() {
 	} while (new_dir < 60 || new_dir > 120);
 	setDirection(new_dir);
 }
+//ZombieCab Constructor
+ZombieCab::ZombieCab(StudentWorld* world, double x, double y, int speedv) : Car(world, IID_ZOMBIE_CAB, x, y, 3, speedv){
+	m_damaged = false;
+	m_plan = 0;
+}
+
+//ZombieCab doSomething
+void ZombieCab::doSomething() {
+	if (!getLiving()) return;
+	GhostRacer* gr = getWorld()->getOverlappingGhostRacer(this);
+	if (gr != nullptr) {
+		if (m_damaged) {}
+		else {
+			getWorld()->playSound(SOUND_VEHICLE_CRASH);
+			gr->loseHP(20);
+			double delta_x = getX() - gr->getX();
+			if (delta_x < 0) {
+				setSpeedH(-5);
+				setDirection(120 + randInt(0, 19));
+			}
+			else if (delta_x > 0) {
+				setSpeedH(5);
+				setDirection(60 - randInt(0, 19));
+			}
+			m_damaged = true;
+		}
+	}
+	double GR_SpeedV = getWorld()->getGR()->getSpeedV();
+	double vert_speed = getSpeedV() - GR_SpeedV;
+	double horiz_speed = getSpeedH();
+	double new_y = getY() + vert_speed;
+	double new_x = getX() + horiz_speed;
+	moveTo(new_x, new_y);
+	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
+		kill();
+		return;
+	}
+	Actor* a = getWorld()->closestFrontCollLane(this);
+	if (vert_speed > GR_SpeedV && a != nullptr) {
+		if (a->getY() - getY() < 96) {
+			setSpeedV(getSpeedV() - .5);
+			return;
+		}
+	}
+	if (vert_speed <= GR_SpeedV && a != nullptr) {
+		if (a->getY() - getY() < 96) {
+			setSpeedV(getSpeedV() + .5);
+			return;
+		}
+	}
+	m_plan--;
+	if (m_plan > 0) return;
+	else {
+		m_plan = randInt(4, 32);
+		setSpeedV(getSpeedV() + randInt(-2, 2));
+	}
+}
+
+bool ZombieCab::sprayed() {
+	loseHP(1);
+	if (getHP() <= 0) {
+		kill();
+		getWorld()->playSound(SOUND_VEHICLE_DIE);
+		if (randInt(0, 4) == 0) {
+			Actor* os = new OilSlick(getWorld(), getX(), getY());
+			getWorld()->addActor(os);
+		}
+		getWorld()->increaseScore(200);
+		return true;
+	}
+	getWorld()->playSound(SOUND_VEHICLE_HURT);
+	return true;
+}
+
 //Spray Constructor
 Spray::Spray(StudentWorld* world, double x, double y, int dir)
 	: Actor(world, IID_HOLY_WATER_PROJECTILE, x, y, 1.0, 1, dir, false, 0, 0, 0)
@@ -220,6 +300,9 @@ void HealingGoodie::doSomething() {
 	GhostRacer* gr = getWorld()->getOverlappingGhostRacer(this);
 	if (gr != nullptr) {
 		gr->loseHP(-10);
+		if (gr->getHP() > 100) {
+			gr->setHP(100);
+		}
 		kill();
 		getWorld()->playSound(SOUND_GOT_GOODIE);
 		getWorld()->increaseScore(250);
