@@ -113,7 +113,8 @@ public:
 class ZombieCab : public Car {
 public:
 	ZombieCab(StudentWorld* world, double x, double y);
-	void doSomething() = 0;
+	virtual void doSomething();
+	virtual bool sprayed();
 };
 */
 //Pedestrian Class
