@@ -17,6 +17,8 @@ private:
 public:
 	Actor(StudentWorld* world, int imageID, double startX, double startY, double size, unsigned int depth, int startDirection, bool coll, int hp, int speedv, int speedh);
 	virtual void doSomething() = 0;
+	int getHP();
+	void loseHP(int n);
 	bool getLiving();
 	void kill();
 	double getSpeedV();
@@ -38,32 +40,67 @@ class Car : public Actor {
 class GhostRacer : public Car {
 public:
 	GhostRacer(StudentWorld* world);
-	void doSomething();
+	virtual void doSomething();
+	void addWater();
+	void spin();
+	int getWater() const;
 private:
 	int m_water;
 };
 
+//Spray Class
+class Spray : public Actor
+{
+public:
+	Spray(StudentWorld* world, double x, double y, int dir);
+	virtual void doSomething();
+private:
+	int m_travelDist;
+};
 
-
+//Stationary Class
 class Stationary : public Actor {
 public:
-	Stationary(StudentWorld* world, int imageID, double startX, double startY, double size, int hp, int speedv, int speedh);
+	Stationary(StudentWorld* world, int imageID, double startX, double startY, double size, int dir);
 	virtual void doSomething() = 0;
 
 };
 
+//Border Class
 class Border : public Stationary {
 public:
 	Border(StudentWorld* world, bool yellow, int x, int y);
-	void doSomething();
+	virtual void doSomething();
 private:
 	int isYellowImage(bool yellow);
 };
+//class OilSlick
+class OilSlick : public Stationary {
+public: 
+	OilSlick(StudentWorld* world, double x, double y);
+	virtual void doSomething();
+};
+//HolyWaterGoodie Class
+class HolyWaterGoodie : public Stationary
+{
+public:
+	HolyWaterGoodie(StudentWorld* world, double x, double y);
+	virtual void doSomething();
+};
+
+//Soul Class
+class Soul : public Stationary
+{
+public:
+	Soul(StudentWorld* world, double x, double y);
+	virtual void doSomething();
+};
+
 /*
 //ZombieCab Class
 class ZombieCab : public Car {
 public:
-	ZombieCab();
+	ZombieCab(StudentWorld* world);
 	void doSomething() = 0;
 };
 */
@@ -75,13 +112,20 @@ public:
 private:
 	int m_plan;
 };
-
 /*
-//Human Class
-class Human : public Pedestrian {
+//ZombiePed Class
+class ZombiePed : public Pedestrian {
 public:
-	Human();
-	void doSomething() = 0;
+	ZombiePed(StudentWorld* world, double x, double y);
+	virtual void doSomething();
+};
+
+
+//HumanPed Class
+class HumanPed : public Pedestrian {
+public:
+	HumanPed(StudentWorld* world, double x, double y);
+	virtual void doSomething();
 };
 */
 #endif // ACTOR_H_
