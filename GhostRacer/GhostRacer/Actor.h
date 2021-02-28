@@ -16,6 +16,10 @@ private:
 protected:
 	void relativeSpeed();
 	bool removeOutofBounds();
+	void setSpeedV(double s);
+	void setSpeedH(double s);
+	double getSpeedH() const;
+	StudentWorld* getWorld() const;
 public:
 	Actor(StudentWorld* world, int imageID, double startX, double startY, double size, unsigned int depth, int startDirection, bool coll, int hp, int speedv, int speedh);
 	virtual void doSomething() = 0;
@@ -26,11 +30,7 @@ public:
 	bool getLiving() const;
 	void kill();
 	double getSpeedV() const;
-	void setSpeedV(double s);
-	double getSpeedH() const;
-	void setSpeedH(double s);
 	bool getColl() const;
-	StudentWorld* getWorld() const;
 };
 
 

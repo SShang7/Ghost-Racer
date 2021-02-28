@@ -17,7 +17,7 @@ void Actor::loseHP(int n) {
 	m_hp -= n;
 }
 void Actor::setHP(int n) {
-	m_hp == n;
+	m_hp = n;
 }
 bool Actor::getLiving() const {
 	return m_living;
