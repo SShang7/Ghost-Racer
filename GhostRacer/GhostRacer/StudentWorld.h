@@ -21,7 +21,6 @@ public:
     GhostRacer* getGR() const; //gets point to Ghost Racer
     void addActor(Actor* a);
     void addSoul();
-    bool overlap(Actor* a1, Actor* a2) const;
     bool overlapWater(Actor* a);
     Actor* closestFrontCollLane(Actor* a);
     Actor* closestBehindCollLane(Actor* a);
@@ -37,6 +36,7 @@ private:
     int m_soulCount;
     int m_bonus;
     int lane(double x);
+    bool overlap(Actor* a1, Actor* a2) const;
     Actor* closestBotCollLane(int l);
     Actor* closestTopCollLane(int l);
     

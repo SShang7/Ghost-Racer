@@ -164,7 +164,7 @@ int StudentWorld::move()
         return GWSTATUS_FINISHED_LEVEL;
     }
     //decrement bonus
-    if (m_bonus > 0) {
+    if (m_bonus > 0) { //make sure bonus doesn't become negative
         m_bonus--;
     }
     //score board

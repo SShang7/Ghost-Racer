@@ -13,22 +13,24 @@ private:
 	bool m_coll;
 	int m_hp;
 	StudentWorld* m_world;
-
+protected:
+	void relativeSpeed();
+	bool removeOutofBounds();
 public:
 	Actor(StudentWorld* world, int imageID, double startX, double startY, double size, unsigned int depth, int startDirection, bool coll, int hp, int speedv, int speedh);
 	virtual void doSomething() = 0;
 	virtual bool sprayed();
-	int getHP();
+	int getHP() const;
 	void loseHP(int n);
 	void setHP(int n);
-	bool getLiving();
+	bool getLiving() const;
 	void kill();
-	double getSpeedV();
+	double getSpeedV() const;
 	void setSpeedV(double s);
-	double getSpeedH();
+	double getSpeedH() const;
 	void setSpeedH(double s);
-	bool getColl();
-	StudentWorld* getWorld();
+	bool getColl() const;
+	StudentWorld* getWorld() const;
 };
 
 
@@ -66,7 +68,6 @@ private:
 class Stationary : public Actor {
 public:
 	Stationary(StudentWorld* world, int imageID, double startX, double startY, double size, int dir);
-	virtual void doSomething() = 0;
 
 };
 
@@ -131,6 +132,7 @@ public:
 	void setMove(int n);
 protected:
 	void moveDec();
+	void newPlan();
 private:
 	int m_plan;
 };

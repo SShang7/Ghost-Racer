@@ -10,7 +10,7 @@ Actor::Actor(StudentWorld* world, int imageID, double startX, double startY, dou
 bool  Actor::sprayed() {
 	return false;
 }
-int Actor::getHP() {
+int Actor::getHP() const {
 	return m_hp;
 }
 void Actor::loseHP(int n) {
@@ -19,28 +19,42 @@ void Actor::loseHP(int n) {
 void Actor::setHP(int n) {
 	m_hp == n;
 }
-bool Actor::getLiving() {
+bool Actor::getLiving() const {
 	return m_living;
 }
 void Actor::kill() {
 	m_living = false;
 }
-double Actor::getSpeedV() {
+double Actor::getSpeedV() const {
 	return m_speedv;
 }
 void Actor::setSpeedV(double s) {
 	m_speedv = s;
 }
-double Actor::getSpeedH() {
+double Actor::getSpeedH() const {
 	return m_speedh;
 }
 void Actor::setSpeedH(double s) {
 	m_speedh = s;
 }
-bool Actor::getColl() {
+bool Actor::getColl() const {
 	return m_coll;
 }
-StudentWorld* Actor::getWorld() {
+void Actor::relativeSpeed() {
+	double vert_speed = getSpeedV() - getWorld()->getGR()->getSpeedV();
+	double horiz_speed = getSpeedH();
+	double new_y = getY() + vert_speed;
+	double new_x = getX() + horiz_speed;
+	moveTo(new_x, new_y);
+}
+bool Actor::removeOutofBounds() {
+	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
+		kill();
+		return true;
+	}
+	return false;
+}
+StudentWorld* Actor::getWorld() const {
 	return m_world;
 }
 //Car Constructor
@@ -158,16 +172,13 @@ void ZombieCab::doSomething() {
 			m_damaged = true;
 		}
 	}
+	relativeSpeed();
+	if (removeOutofBounds()) {
+		return;
+	}
 	double GR_SpeedV = getWorld()->getGR()->getSpeedV();
 	double vert_speed = getSpeedV() - GR_SpeedV;
 	double horiz_speed = getSpeedH();
-	double new_y = getY() + vert_speed;
-	double new_x = getX() + horiz_speed;
-	moveTo(new_x, new_y);
-	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
-		kill();
-		return;
-	}
 	Actor* a = getWorld()->closestFrontCollLane(this);
 	if (vert_speed > GR_SpeedV && a != nullptr) {
 			setSpeedV(getSpeedV() - .5);
@@ -218,8 +229,7 @@ void Spray::doSomething() {
 	}
 	moveForward(SPRITE_HEIGHT);
 	m_travelDist -= SPRITE_HEIGHT;
-	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
-		kill();
+	if (removeOutofBounds()) {
 		return;
 	}
 	if (m_travelDist <= 0) {
@@ -242,13 +252,8 @@ int Border::isYellowImage(bool yellow){
 	else return IID_WHITE_BORDER_LINE;
 }
 void Border::doSomething() {
-	double vert_speed = -4.0 - getWorld()->getGR()->getSpeedV();
-	double horiz_speed = getSpeedH();
-	int new_y = getY() + vert_speed;
-	int new_x = getX() + horiz_speed;
-	moveTo(new_x, new_y);
-	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
-		kill();
+	relativeSpeed();
+	if (removeOutofBounds()) {
 		return;
 	}
 	
@@ -260,13 +265,8 @@ OilSlick::OilSlick(StudentWorld* world, double x, double y) : Stationary(world, 
 
 //OilSlick doSomething
 void OilSlick::doSomething() {
-	double vert_speed = -4.0 - getWorld()->getGR()->getSpeedV();
-	double horiz_speed = 0;
-	double new_y = getY() + vert_speed;
-	double new_x = getX() + horiz_speed;
-	moveTo(new_x, new_y);
-	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
-		kill();
+	relativeSpeed();
+	if (removeOutofBounds()) {
 		return;
 	}
 	GhostRacer* gr = getWorld()->getOverlappingGhostRacer(this);
@@ -282,13 +282,8 @@ HealingGoodie::HealingGoodie(StudentWorld* world, double x, double y) : Stationa
 }
 //HealingGoodie doSomething
 void HealingGoodie::doSomething() {
-	double vert_speed = -4.0 - getWorld()->getGR()->getSpeedV();
-	double horiz_speed = 0;
-	double new_y = getY() + vert_speed;
-	double new_x = getX() + horiz_speed;
-	moveTo(new_x, new_y);
-	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
-		kill();
+	relativeSpeed();
+	if (removeOutofBounds()) {
 		return;
 	}
 	GhostRacer* gr = getWorld()->getOverlappingGhostRacer(this);
@@ -313,13 +308,8 @@ HolyWaterGoodie::HolyWaterGoodie(StudentWorld* world, double x, double y) : Stat
 }
 //HolyWaterGoodie doSomething
 void HolyWaterGoodie::doSomething() {
-	double vert_speed = -4.0 - getWorld()->getGR()->getSpeedV();
-	double horiz_speed = 0;
-	double new_y = getY() + vert_speed;
-	double new_x = getX() + horiz_speed;
-	moveTo(new_x, new_y);
-	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
-		kill();
+	relativeSpeed();
+	if (removeOutofBounds()) {
 		return;
 	}
 	GhostRacer* gr = getWorld()->getOverlappingGhostRacer(this);
@@ -340,13 +330,8 @@ Soul::Soul(StudentWorld* world, double x, double y) : Stationary(world, IID_SOUL
 
 }
 void Soul::doSomething() {
-	double vert_speed = -4.0 - getWorld()->getGR()->getSpeedV();
-	double horiz_speed = 0;
-	double new_y = getY() + vert_speed;
-	double new_x = getX() + horiz_speed;
-	moveTo(new_x, new_y);
-	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
-		kill();
+	relativeSpeed();
+	if (removeOutofBounds()) {
 		return;
 	}
 	GhostRacer* gr = getWorld()->getOverlappingGhostRacer(this);
@@ -368,6 +353,12 @@ Pedestrian::Pedestrian(StudentWorld* world, int imageID, double startX, double s
 void Pedestrian::moveDec() {
 	m_plan--;
 }
+void Pedestrian::newPlan() {
+	setSpeedH(pow(-1, randInt(0, 1)) * randInt(1, 3));
+	setMove(randInt(4, 32));
+	if (getSpeedH() < 0) setDirection(180);
+	else if (getSpeedH() > 0) setDirection(0);
+}
 int Pedestrian::getMove() const {
 	return m_plan;
 }
@@ -386,21 +377,13 @@ void HumanPed::doSomething() {
 		gr->kill();
 		return;
 	}
-	double vert_speed = getSpeedV() - getWorld()->getGR()->getSpeedV();
-	double horiz_speed = getSpeedH();
-	double new_y = getY() + vert_speed;
-	double new_x = getX() + horiz_speed;
-	moveTo(new_x, new_y);
-	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
-		kill();
+	relativeSpeed();
+	if (removeOutofBounds()) {
 		return;
 	}
 	moveDec();
 	if (getMove() > 0) return;
-	setSpeedH(pow(-1, randInt(0, 1)) * randInt(1, 3));
-	setMove(randInt(4,32));
-	if (getSpeedH() < 0) setDirection(180);
-	else if (getSpeedH() > 0) setDirection(0);
+	newPlan();
 }
 
 bool HumanPed::sprayed() {
@@ -446,13 +429,8 @@ void ZombiePed::doSomething() {
 			m_grunt = 20;
 		}
 	}
-	double vert_speed = getSpeedV() - getWorld()->getGR()->getSpeedV();
-	double horiz_speed = getSpeedH();
-	double new_y = getY() + vert_speed;
-	double new_x = getX() + horiz_speed;
-	moveTo(new_x, new_y);
-	if (getX() < 0 || getY() < 0 || getX() > VIEW_WIDTH || getY() > VIEW_HEIGHT) {
-		kill();
+	relativeSpeed();
+	if (removeOutofBounds()) {
 		return;
 	}
 	
@@ -460,10 +438,7 @@ void ZombiePed::doSomething() {
 		moveDec();
 		return; 
 	}
-	setSpeedH(pow(-1, randInt(0, 1)) * randInt(1, 3));
-	setMove(randInt(4, 32));
-	if (getSpeedH() < 0) setDirection(180);
-	else if (getSpeedH() > 0) setDirection(0);
+	newPlan();
 }
 
 bool ZombiePed::sprayed() {
